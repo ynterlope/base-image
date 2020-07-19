@@ -1,0 +1,46 @@
+{
+  "variables": {
+    "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+    "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+    "region": "{{env `AWS_DEFAULT_REGION`}}",
+    "vault_version": "{{env `VAULT_VERSION`}}",
+    "consul_version": "{{env `CONSUL_VERSION`}}",
+    "step_version": "{{env `STEP_VERSION`}}",
+    "step_ssh_version": "{{env `STEP_SSH_VERSION`}}",
+    "team": "{{env `STEP_TEAMNAME`}}"
+  },
+  "builders": [
+    {
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "ami_name": "{{user `team`}}-base-centos7-{{timestamp}}",
+      "instance_type": "t3.medium",
+      "region": "{{user `region`}}",
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "CentOS Linux 7 x86_64 HVM EBS *",
+          "root-device-type": "ebs"
+        },
+        "owners": ["679593333241"],
+        "most_recent": true
+      },
+      "ssh_username": "centos",
+      "type": "amazon-ebs"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "scripts": ["./scripts/base.sh"],
+      "environment_vars": [
+        "VAULT_VERSION={{user `vault_version`}}",
+        "CONSUL_VERSION={{user `consul_version`}}",
+        "STEP_VERSION={{user `step_version`}}",
+        "STEP_SSH_VERSION={{user `step_ssh_version`}}",
+        "STEP_TEAMNAME={{user `team`}}"
+      ],
+      "execute_command": "chmod +x {{ .Path }}; sudo bash -c \"{{ .Vars }} {{ .Path }}\""
+    }
+  ]
+}
